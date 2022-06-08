@@ -45,6 +45,10 @@ defmodule Braintree.Testing.CreditCardNumbers do
     ~w(4009348888881881 4012888888881881 4111111111111111 4000111111111115 4500600000000061)
   end
 
+  def dispute_open_visa do
+    ~w(4023898493988028)
+  end
+
   defmodule FailsSandboxVerification do
     @moduledoc """
     These are vendor specific numbers that will always fail verification.

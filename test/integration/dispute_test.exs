@@ -1,0 +1,53 @@
+defmodule Braintree.Integration.DisputeTest do
+  use ExUnit.Case, async: true
+
+  alias Braintree.Dispute
+  alias Braintree.Testing.CreditCardNumbers
+  alias Braintree.Transaction
+
+  @moduletag :integration
+
+  test "find/1 fails for invalid dispute id" do
+    assert {:error, :not_found} = Dispute.find("someinvalidid")
+  end
+
+  test "find/1 should return dispute" do
+    {:ok, transaction} = create_and_settle_transaction()
+    %{disputes: [%{"id" => id, "reason" => reason}]} = transaction
+
+    {:ok, dispute} = Dispute.find(id)
+    assert dispute.id == id
+    assert dispute.reason == reason
+    assert dispute.amount_disputed == transaction.amount
+    assert dispute.amount_won
+    assert dispute.case_number
+    assert dispute.created_at
+    assert dispute.currency_iso_code
+    assert dispute.evidence
+    assert dispute.kind
+    assert dispute.merchant_account_id
+    assert dispute.paypal_messages
+    assert dispute.reason_code
+    assert dispute.received_date
+    assert dispute.reply_by_date
+    assert dispute.status
+    assert dispute.status_history
+    assert dispute.transaction
+    assert dispute.updated_at
+  end
+
+  defp create_and_settle_transaction do
+    [card_number | _] = CreditCardNumbers.dispute_open_visa()
+
+    Transaction.sale(%{
+      amount: "10.00",
+      customer: %{
+        last_name: "Batman"
+      },
+      credit_card: %{
+        number: card_number,
+        expiration_date: "05/2025"
+      }
+    })
+  end
+end

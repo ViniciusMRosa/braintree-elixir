@@ -7,6 +7,8 @@ defmodule Braintree.Dispute do
 
   https://developers.braintreepayments.com/reference/response/dispute/ruby
   """
+  use Braintree.Construction
+
   alias Braintree.{HTTP}
   alias Braintree.Transaction
   alias Braintree.ErrorResponse, as: Error
@@ -63,12 +65,37 @@ defmodule Braintree.Dispute do
             transaction: %Transaction{},
             updated_at: nil
 
-  @spec find(String.t(), Keyword.t()) :: {:ok, map} | {:error, Error.t()}
+  @spec find(String.t(), Keyword.t()) :: {:ok, t} | {:error, Error.t()}
   def find(dispute_id, opts \\ []) do
     path = "disputes/#{dispute_id}"
 
     with {:ok, payload} <- HTTP.get(path, opts) do
-      {:ok, payload}
+      {:ok, new(payload)}
     end
+  end
+
+  @doc """
+  Convert a map into a Dispute struct.
+
+  ## Example
+
+  dispute =
+    Braintree.Dispute.new(%{
+      "id" => "q7j87ybw9qvhp4fp",
+      "status" => "open"
+    })
+  """
+  def new(%{"dispute" => map}) do
+    new(map)
+  end
+
+  def new(map) when is_map(map) do
+    dispute = super(map)
+
+    dispute
+  end
+
+  def new(list) when is_list(list) do
+    Enum.map(list, &new/1)
   end
 end
