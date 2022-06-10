@@ -96,6 +96,22 @@ defmodule Braintree.Dispute do
   end
 
   @doc """
+  Accepts a dispute by its `dispute_id`.
+
+  ## Example
+
+      {:ok, dispute} = Dispute.accept("ax6hg4fk9")
+  """
+  @spec accept(String.t(), Keyword.t()) :: {:ok, t} | {:error, Error.t()}
+  def accept(dispute_id, opts \\ []) do
+    path = "disputes/#{dispute_id}/accept"
+
+    with {:ok, payload} <- HTTP.put(path, opts) do
+      {:ok, new(payload)}
+    end
+  end
+
+  @doc """
   Convert a map into a Dispute struct.
 
   ## Example

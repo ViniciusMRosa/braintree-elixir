@@ -36,7 +36,7 @@ defmodule Braintree.Integration.DisputeTest do
     assert dispute.updated_at
   end
 
-  test "search/2 should return dispute" do
+  test "search/1 should return dispute" do
     {:ok, transaction} = create_and_settle_transaction()
     %{disputes: [%{"id" => id, "reason" => reason}]} = transaction
 
@@ -51,7 +51,7 @@ defmodule Braintree.Integration.DisputeTest do
     assert dispute.reason == reason
   end
 
-  test "search/2 should return empty list when no records are found" do
+  test "search/1 should return empty list when no records are found" do
     search_params = %{
       id: %{
         is: "someinvalidid"
@@ -74,5 +74,32 @@ defmodule Braintree.Integration.DisputeTest do
         expiration_date: "05/2025"
       }
     })
+  end
+
+  test "accept/1 should accept a dispute and return is as accepted" do
+    {:ok, transaction} = create_and_settle_transaction()
+    %{disputes: [%{"id" => id}]} = transaction
+
+    {:ok, dispute} = Dispute.accept(id)
+
+    assert dispute.status == "accepted"
+  end
+
+  test "accept/1 should error not found when dispute does not exist" do
+    assert {:error, :not_found} = Dispute.accept("some-invalid-id")
+  end
+
+  test "accept/1 should return error when dispute cannot be accepted" do
+    {:ok, transaction} = create_and_settle_transaction()
+    %{disputes: [%{"id" => id}]} = transaction
+
+    {:ok, dispute} = Dispute.accept(id)
+
+    assert dispute.status == "accepted"
+
+    assert {:error,
+            %Braintree.ErrorResponse{
+              params: %{id: ^id}
+            }} = Dispute.accept(id)
   end
 end
