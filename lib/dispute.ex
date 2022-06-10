@@ -9,8 +9,7 @@ defmodule Braintree.Dispute do
   """
   use Braintree.Construction
 
-  alias Braintree.{HTTP}
-  alias Braintree.Transaction
+  alias Braintree.{HTTP, Search, Transaction}
   alias Braintree.ErrorResponse, as: Error
 
   @type t :: %__MODULE__{
@@ -65,6 +64,13 @@ defmodule Braintree.Dispute do
             transaction: %Transaction{},
             updated_at: nil
 
+  @doc """
+  Find an existing dispute by `dispute_id`
+
+  ## Example
+
+      {:ok, dispute} = Dispute.find("ax6hg4fk9")
+  """
   @spec find(String.t(), Keyword.t()) :: {:ok, t} | {:error, Error.t()}
   def find(dispute_id, opts \\ []) do
     path = "disputes/#{dispute_id}"
@@ -72,6 +78,21 @@ defmodule Braintree.Dispute do
     with {:ok, payload} <- HTTP.get(path, opts) do
       {:ok, new(payload)}
     end
+  end
+
+  @doc """
+  To search for disputes, pass a map of search parameters.
+
+  For more information about which fields are searchable please refer to
+  https://developer.paypal.com/braintree/docs/reference/request/dispute/search
+
+  ## Example:
+
+      {:ok, disputes} = Braintree.Dispute.search(%{kind: %{is: "chargeback"}})
+  """
+  @spec search(map, Keyword.t()) :: {:ok, t} | {:error, Error.t()}
+  def search(params, opts \\ []) when is_map(params) do
+    Search.perform(params, "disputes", &new/1, opts)
   end
 
   @doc """
@@ -87,6 +108,10 @@ defmodule Braintree.Dispute do
   """
   def new(%{"dispute" => map}) do
     new(map)
+  end
+
+  def new(%{"disputes" => list}) do
+    new(list)
   end
 
   def new(map) when is_map(map) do

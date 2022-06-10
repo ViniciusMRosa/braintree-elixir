@@ -36,6 +36,31 @@ defmodule Braintree.Integration.DisputeTest do
     assert dispute.updated_at
   end
 
+  test "search/2 should return dispute" do
+    {:ok, transaction} = create_and_settle_transaction()
+    %{disputes: [%{"id" => id, "reason" => reason}]} = transaction
+
+    search_params = %{
+      id: %{
+        is: id
+      }
+    }
+
+    {:ok, [%Dispute{} = dispute | _]} = Dispute.search(search_params)
+
+    assert dispute.reason == reason
+  end
+
+  test "search/2 should return empty list when no records are found" do
+    search_params = %{
+      id: %{
+        is: "someinvalidid"
+      }
+    }
+
+    {:ok, []} = Dispute.search(search_params)
+  end
+
   defp create_and_settle_transaction do
     [card_number | _] = CreditCardNumbers.dispute_open_visa()
 

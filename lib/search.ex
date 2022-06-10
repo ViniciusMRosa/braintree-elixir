@@ -19,7 +19,15 @@ defmodule Braintree.Search do
 
   """
   @spec perform(map, String.t(), fun(), Keyword.t()) :: {:ok, [any]} | {:error, Error.t()}
-  def perform(params, resource, initializer, opts \\ []) when is_map(params) do
+  def perform(params, resource, initializer, opts \\ [])
+
+  def perform(params, "disputes", initializer, opts) when is_map(params) do
+    with {:ok, payload} <- HTTP.post("disputes/advanced_search", %{search: params}, opts) do
+      {:ok, initializer.(payload)}
+    end
+  end
+
+  def perform(params, resource, initializer, opts) when is_map(params) do
     with {:ok, payload} <- HTTP.post(resource <> "/advanced_search_ids", %{search: params}, opts) do
       fetch_all_records(payload, resource, initializer, opts)
     end
