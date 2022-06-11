@@ -102,4 +102,31 @@ defmodule Braintree.Integration.DisputeTest do
               params: %{id: ^id}
             }} = Dispute.accept(id)
   end
+
+  test "finalize/1 should accept a dispute and return is as accepted" do
+    {:ok, transaction} = create_and_settle_transaction()
+    %{disputes: [%{"id" => id}]} = transaction
+
+    {:ok, dispute} = Dispute.finalize(id)
+
+    assert dispute.status == "disputed"
+  end
+
+  test "finalize/1 should error not found when dispute does not exist" do
+    assert {:error, :not_found} = Dispute.accept("some-invalid-id")
+  end
+
+  test "finalize/1 should return error when dispute cannot be finalized" do
+    {:ok, transaction} = create_and_settle_transaction()
+    %{disputes: [%{"id" => id}]} = transaction
+
+    {:ok, dispute} = Dispute.finalize(id)
+
+    assert dispute.status == "disputed"
+
+    assert {:error,
+            %Braintree.ErrorResponse{
+              params: %{id: ^id}
+            }} = Dispute.finalize(id)
+  end
 end

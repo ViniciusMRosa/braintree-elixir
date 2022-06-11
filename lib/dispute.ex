@@ -112,6 +112,22 @@ defmodule Braintree.Dispute do
   end
 
   @doc """
+  Finalize a dispute by its `dispute_id`.
+
+  ## Example
+
+      {:ok, dispute} = Dispute.finalize("ax6hg4fk9")
+  """
+  @spec finalize(String.t(), Keyword.t()) :: {:ok, t} | {:error, Error.t()}
+  def finalize(dispute_id, opts \\ []) do
+    path = "disputes/#{dispute_id}/finalize"
+
+    with {:ok, payload} <- HTTP.put(path, opts) do
+      {:ok, new(payload)}
+    end
+  end
+
+  @doc """
   Convert a map into a Dispute struct.
 
   ## Example
