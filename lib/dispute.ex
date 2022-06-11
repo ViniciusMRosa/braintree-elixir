@@ -9,6 +9,7 @@ defmodule Braintree.Dispute do
   """
   use Braintree.Construction
 
+  alias Braintree.Dispute.Evidence
   alias Braintree.{HTTP, Search, Transaction}
   alias Braintree.ErrorResponse, as: Error
 
@@ -126,6 +127,13 @@ defmodule Braintree.Dispute do
       {:ok, new(payload)}
     end
   end
+
+  @spec add_text_evidence(String.t(), String.t(), Keyword.t()) :: {:ok, t} | {:error, Error.t()}
+  defdelegate add_text_evidence(dispute_id, content, opts \\ []), to: Evidence
+
+  @spec add_text_evidence(String.t(), String.t(), String.t(), Keyword.t()) ::
+          {:ok, t} | {:error, Error.t()}
+  defdelegate add_text_evidence(dispute_id, content, category, opts), to: Evidence
 
   @doc """
   Convert a map into a Dispute struct.
